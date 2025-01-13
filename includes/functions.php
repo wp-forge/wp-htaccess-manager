@@ -55,8 +55,8 @@ function hasMarkers( $marker, $file = null ) {
 	$content = $fs->get_contents( $file );
 
 	return $content &&
-	       false !== strpos( $content, getOpeningMarker( $marker ) ) &&
-	       false !== strpos( $content, getClosingMarker( $marker ) );
+			false !== strpos( $content, getOpeningMarker( $marker ) ) &&
+			false !== strpos( $content, getClosingMarker( $marker ) );
 }
 
 /**
@@ -65,7 +65,7 @@ function hasMarkers( $marker, $file = null ) {
  * Note: Be sure to check if hasMarkers() returns true first!
  *
  * @param string      $marker   The marker name.
- * @param string      $location The location to insert markers (e.g. before or after)
+ * @param string      $location The location to insert markers (e.g. before or after).
  * @param string|null $file     The path to the file.
  *
  * @return bool
@@ -89,10 +89,10 @@ function addMarkers( $marker, $location = 'before', $file = null ) {
 				array_merge(
 					$lines['beforeMarkers'],
 					$lines['afterMarkers'],
-					[
+					array(
 						getOpeningMarker( $marker ),
-						getClosingMarker( $marker )
-					]
+						getClosingMarker( $marker ),
+					)
 				)
 			);
 			break;
@@ -100,10 +100,10 @@ function addMarkers( $marker, $location = 'before', $file = null ) {
 			$content = implode(
 				PHP_EOL,
 				array_merge(
-					[
+					array(
 						getOpeningMarker( $marker ),
-						getClosingMarker( $marker )
-					],
+						getClosingMarker( $marker ),
+					),
 					$lines['beforeMarkers'],
 					$lines['afterMarkers']
 				)
@@ -193,9 +193,9 @@ function insertContent( $marker, $content, $file = null ) {
 		PHP_EOL,
 		array_merge(
 			$lines['beforeMarkers'],
-			[ getOpeningMarker( $marker ) ],
+			array( getOpeningMarker( $marker ) ),
 			$lines['betweenMarkers'],
-			[ getClosingMarker( $marker ) ],
+			array( getClosingMarker( $marker ) ),
 			$lines['afterMarkers']
 		)
 	);
@@ -204,9 +204,11 @@ function insertContent( $marker, $content, $file = null ) {
 }
 
 /**
+ * Add content to htaccess file.
+ * 
  * @param string       $marker   The marker name.
  * @param string|array $content  The content of the file as a string or array of lines.
- * @param string       $location The location to insert markers (e.g. before or after)
+ * @param string       $location The location to insert markers (e.g. before or after).
  * @param string       $file     The file path.
  *
  * @return bool
@@ -238,9 +240,9 @@ function getLinesRelativeToMarkers( array $lines, $marker ) {
 	$foundOpeningMarker = false;
 	$foundClosingMarker = false;
 
-	$beforeMarkers  = [];
-	$betweenMarkers = [];
-	$afterMarkers   = [];
+	$beforeMarkers  = array();
+	$betweenMarkers = array();
+	$afterMarkers   = array();
 
 	foreach ( $lines as $line ) {
 		if ( ! $foundOpeningMarker && false !== strpos( $line, $openingMarker ) ) {
@@ -259,32 +261,36 @@ function getLinesRelativeToMarkers( array $lines, $marker ) {
 		}
 	}
 
-	return [
+	return array(
 		'beforeMarkers'  => $beforeMarkers,
 		'betweenMarkers' => $betweenMarkers,
 		'afterMarkers'   => $afterMarkers,
-	];
+	);
 }
 
 /**
  * Convert the contents of a file to an array of lines.
  *
- * @param string $content File content
+ * @param string $content File content.
  *
  * @return array
  */
 function convertContentToLines( $content ) {
-	$lines = [];
+	$lines = array();
 
 	if ( is_array( $content ) ) {
 		return $content;
 	}
 
 	if ( is_string( $content ) ) {
-		$lines = preg_split( '/\R/', $content );
+		if ( ! mb_check_encoding( $content, 'UTF-8' ) ) {
+			$content = mb_convert_encoding( $content, 'UTF-8', 'auto' );
+		}
+		$lines = preg_split( '/\r\n|\r|\n/', $content );
+		$lines = array_filter( $lines, fn( $line ) => trim( $line ) !== '' );
 	}
 
-	return is_array( $lines ) ? (array) $lines : [];
+	return is_array( $lines ) ? (array) $lines : array();
 }
 
 /**
