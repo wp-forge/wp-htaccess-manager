@@ -287,7 +287,7 @@ function convertContentToLines( $content ) {
 			$content = mb_convert_encoding( $content, 'UTF-8', 'auto' );
 		}
 		$lines = preg_split( '/\r\n|\r|\n/', $content );
-		$lines = array_filter( $lines, fn( $line ) => trim( $line ) !== '' );
+		$lines = array_filter( $lines, function( $line ) { return trim( $line ) !== ''; } );
 	}
 
 	return is_array( $lines ) ? (array) $lines : array();
